@@ -21,7 +21,9 @@ if (!isset($_POST['expected_delivery'])) {
 $status = isset($_POST['status']) ? $_POST['status'] : 'No Record from Clinic';
 
 // Prepare and bind
-$stmt = $conn->prepare("INSERT INTO patient (first_name, middle_name, last_name, contact, birthdate, address, height, age, midwife_nurse_doctor, weight, size_of_tummy, expected_delivery, status, bp, pr, rr, fh, fht, aog, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, NOW(), NOW())");
+$stmt = $conn->prepare("INSERT INTO patient (first_name, middle_name, last_name, contact, birthdate, address, height, age, midwife_nurse_doctor, weight, expected_delivery, status,  husband_name, 
+        plan_to_deliver_at, lmp, civil_status, religion, educ_level, occupation, 
+        monthly_income, blood_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?,?,?, NOW(), NOW())");
 
 // Check if prepare was successful
 if ($stmt === false) {
@@ -29,7 +31,7 @@ if ($stmt === false) {
 }
 
 // Bind parameters
-$stmt->bind_param("ssssssissssssssssss", 
+$stmt->bind_param("ssssssissssssssssssss", 
     $_POST['first_name'], 
     $_POST['middle_name'], 
     $_POST['last_name'], 
@@ -40,15 +42,24 @@ $stmt->bind_param("ssssssissssssssssss",
     $_POST['age'], 
     $_POST['midwife_nurse_doctor'], 
     $_POST['weight'], 
-    $_POST['size_of_tummy'],
+    // $_POST['size_of_tummy'],
     $_POST['expected_delivery'],
     $status,
-    $_POST['bp'], 
-    $_POST['pr'], 
-    $_POST['rr'], 
-    $_POST['fh'], 
-    $_POST['fht'], 
-    $_POST['aog']
+    $_POST['husband_name'],
+    $_POST['plan_to_deliver_at'],
+    $lmp,
+    $_POST['civil_status'],
+    $_POST['religion'],
+    $_POST['educ_level'],
+    $_POST['occupation'],
+    $_POST['monthly_income'],
+    $_POST['blood_type'],
+    // $_POST['bp'], 
+    // $_POST['pr'], 
+    // $_POST['rr'], 
+    // $_POST['fh'], 
+    // $_POST['fht'], 
+    // $_POST['aog']
 );
 
 // Execute the statement

@@ -1,4 +1,13 @@
+<?php
+// Assuming you have started the session and have user information in session variables
+session_start();
 
+// Fetch the user_type from the session
+$user_type = $_SESSION['user_type'] ?? '';
+
+// You can also fetch it directly from the database if needed
+// Example: $user_type = fetchUserTypeFromDatabase($user_id);
+?>
 
 <!-- Rest of your patient.php content -->
 
@@ -49,6 +58,44 @@
           </li>
         </ul>
         <ul class="navbar-nav ml-auto">
+
+        <!-- For notif -->
+<?php
+// Include the notifications fetching script
+include 'fetch_notifications.php';
+?>
+<!-- For notif icon -->
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+        <i class="fas fa-bell"></i>
+        <span class="badge badge-warning navbar-badge"><?php echo count($notifications); ?></span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+        <?php if (count($notifications) > 0): ?>
+            <?php foreach ($notifications as $notification): ?>
+                <a href="prenatal.php?patient_id=<?php echo htmlspecialchars($notification['patient_id']); ?>" class="dropdown-item">
+                    <div class="media">
+                        <!-- <img src="path/to/avatar.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle"> -->
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title">
+                                Appointment for <?php echo htmlspecialchars($notification['patient_name']); ?>
+                                <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                            </h3>
+                            <p class="text-sm">Scheduled for: <?php echo date('d-m-Y', strtotime($notification['prenatal_schedule'])); ?></p>
+                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 1 week from now</p>
+                        </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            <div class="dropdown-divider"></div>
+        <?php else: ?>
+            <a href="#" class="dropdown-item">No upcoming appointments</a>
+        <?php endif; ?>
+        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+    </div>
+</li>
+
+
           <li class="nav-item">
             <a class="nav-link" href="#" role="button">
               <img
@@ -59,11 +106,11 @@
               />
             </a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
               <i class="fas fa-expand-arrows-alt"></i>
             </a>
-          </li>
+          </li> -->
          <!-- Logout Button -->
          <li class="nav-item">
             <button class="nav-link btn btn-link" data-toggle="modal" data-target="#logoutConfirmModal" type="button">
@@ -92,16 +139,7 @@
     </div>
   </div>
 </div>
-      <?php
-// Assuming you have started the session and have user information in session variables
-session_start();
 
-// Fetch the user_type from the session
-$user_type = $_SESSION['user_type'] ?? '';
-
-// You can also fetch it directly from the database if needed
-// Example: $user_type = fetchUserTypeFromDatabase($user_id);
-?>
 <aside
   class="main-sidebar sidebar-light-primary elevation-2"
   style="background-color: rgba(62, 88, 113)"
@@ -181,6 +219,12 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Vaccinated Children</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="children-report.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Children per month</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -196,20 +240,26 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Prenatal Patients</p>
               </a>
             </li>
-
+            <?php if ($user_type !== 'staff'): ?>
             <li class="nav-item">
               <a href="archive_midwives.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Midwives</p>
               </a>
             </li>
-
+            <?php endif; ?>
             <li class="nav-item">
               <a href="archive_child.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Child</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="archive_immunization.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Immunization</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -302,7 +352,7 @@ $user_type = $_SESSION['user_type'] ?? '';
         <div class="card card-info elevation-2">
             <br />
             <div class="col-md-12">
-                <table id="example1" class="table table-bordered table-striped">
+                <table id="example1" class="table-responsive table-bordered table-striped ">
                     <thead>
                         <tr>
                             <th>Patient ID</th>
@@ -354,8 +404,8 @@ if ($result->num_rows > 0) {
         echo "<td>" . htmlspecialchars($row['age']) . "</td>";
         echo "<td><span class='badge " . $statusBadge . "'>" . htmlspecialchars($row['status']) . "</span></td>";
         echo "<td class='text-right'>";
-        echo "<a class='btn btn-sm btn-primary' href='#' data-toggle='modal' data-target='#restore' data-id='" . htmlspecialchars($row['patient_id']) . "'><i class='fa fa-undo'></i> Restore</a>";
-        echo "<a class='btn btn-sm btn-danger' href='#' data-toggle='modal' data-target='#delete' data-id='" . htmlspecialchars($row['patient_id']) . "'><i class='fa fa-trash'></i></a>";
+        echo "<a class='btn btn-sm btn-primary' href='#' data-toggle='modal' data-target='#restore' data-id='" . htmlspecialchars($row['patient_id']) . "'  data-toggle='tooltip' title='Restore'><i class='fa fa-undo'></i> Restore</a>";
+        echo "<a class='btn btn-sm btn-danger' href='#' data-toggle='modal' data-target='#delete' data-id='" . htmlspecialchars($row['patient_id']) . "'  data-toggle='tooltip' title='Delete Permanently'><i class='fa fa-trash'></i></a>";
 
         echo "</td>";
         echo "</tr>";
@@ -373,6 +423,29 @@ $mysqli->close();
         </div>
     </div>
 </section>
+
+
+
+
+<!-- Delete modal -->
+<div id="delete" class="modal animated rubberBand delete-modal" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <img src="../asset/img/sent.png" alt="" width="50" height="46" />
+                <h3>Are you sure you want to permanently delete this Patient?</h3>
+                <div class="m-t-20">
+                    <a href="#" class="btn btn-white" data-dismiss="modal">Close</a>
+                    <form action="delete_from_archive.php" method="POST" style="display: inline;">
+                        <input type="hidden" name="patient_id" id="delete_patient_id" value="">
+                        <button type="submit" class="btn btn-danger delete-btn">Delete Permanently</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="restore" class="modal animated rubberBand restore-modal" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -390,12 +463,6 @@ $mysqli->close();
         </div>
     </div>
 </div>
-
-
-
-
-
-
 <!-- Edit Modal -->
 <div id="edit" class="modal animated rubberBand delete-modal" role="dialog">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1039,14 +1106,17 @@ $(document).ready(function() {
         });
       });
 
-      document.addEventListener('DOMContentLoaded', function () {
+
+    
+    // JavaScript to populate the patient_id input in the modal
     $('#delete').on('show.bs.modal', function (event) {
-        var button = $(event.relatedTarget); // Button that triggered the modal
-        var patientId = button.data('id'); // Extract info from data-* attributes
-        var modal = $(this);
-        modal.find('.modal-body input#patient_id').val(patientId);
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var patientId = button.data('id') // Extract info from data-* attributes
+        var modal = $(this)
+        modal.find('#delete_patient_id').val(patientId)
     });
-});
+
+
 
     </script>
     

@@ -1,4 +1,14 @@
+<?php
 
+// Assuming you have started the session and have user information in session variables
+session_start();
+
+// Fetch the user_type from the session
+$user_type = $_SESSION['user_type'] ?? '';
+
+// You can also fetch it directly from the database if needed
+// Example: $user_type = fetchUserTypeFromDatabase($user_id);
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -30,6 +40,44 @@
           </li>
         </ul>
         <ul class="navbar-nav ml-auto">
+
+        <!-- For notif -->
+<?php
+// Include the notifications fetching script
+include 'fetch_notifications.php';
+?>
+<!-- For notif icon -->
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+        <i class="fas fa-bell"></i>
+        <span class="badge badge-warning navbar-badge"><?php echo count($notifications); ?></span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+        <?php if (count($notifications) > 0): ?>
+            <?php foreach ($notifications as $notification): ?>
+                <a href="prenatal.php?patient_id=<?php echo htmlspecialchars($notification['patient_id']); ?>" class="dropdown-item">
+                    <div class="media">
+                        <!-- <img src="path/to/avatar.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle"> -->
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title">
+                                Appointment for <?php echo htmlspecialchars($notification['patient_name']); ?>
+                                <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                            </h3>
+                            <p class="text-sm">Scheduled for: <?php echo date('d-m-Y', strtotime($notification['prenatal_schedule'])); ?></p>
+                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 1 week from now</p>
+                        </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            <div class="dropdown-divider"></div>
+        <?php else: ?>
+            <a href="#" class="dropdown-item">No upcoming appointments</a>
+        <?php endif; ?>
+        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+    </div>
+</li>
+
+
           <li class="nav-item">
             <a class="nav-link" href="#" role="button">
               <img
@@ -40,11 +88,11 @@
               />
             </a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
               <i class="fas fa-expand-arrows-alt"></i>
             </a>
-          </li>
+          </li> -->
          <!-- Logout Button -->
          <li class="nav-item">
             <button class="nav-link btn btn-link" data-toggle="modal" data-target="#logoutConfirmModal" type="button">
@@ -73,17 +121,7 @@
     </div>
   </div>
 </div>
-      <?php
-
-// Assuming you have started the session and have user information in session variables
-session_start();
-
-// Fetch the user_type from the session
-$user_type = $_SESSION['user_type'] ?? '';
-
-// You can also fetch it directly from the database if needed
-// Example: $user_type = fetchUserTypeFromDatabase($user_id);
-?>
+      
 <aside
   class="main-sidebar sidebar-light-primary elevation-2"
   style="background-color: rgba(62, 88, 113)"
@@ -163,6 +201,12 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Vaccinated Children</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="children-report.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Children per month</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -178,20 +222,26 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Prenatal Patients</p>
               </a>
             </li>
-
+            <?php if ($user_type !== 'staff'): ?>
             <li class="nav-item">
               <a href="archive_midwives.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Midwives</p>
               </a>
             </li>
-
+            <?php endif; ?>
             <li class="nav-item">
               <a href="archive_child.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Child</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="archive_immunization.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Immunization</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -288,37 +338,37 @@ ob_start();
     <div class="card card-info elevation-2">
       <br />
       <div class="col-md-12">
-        <table id="example1" class="table table-bordered table-striped">
+        <table id="example1" class="table-responsive table-bordered table-striped">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Mother Name</th>
-              <th>Child Name</th>
-              <th>Gender</th>
-              <th>Birthdate</th>
-              <th>Weight</th>
-              <th>Height</th>
-              <th>Action</th>
+            <th>ID</th>
+                <th>Mother Name</th>
+                <th>Child Name</th>
+                <th>Birthdate</th>
+                <th>Weight</th>
+                <th>Height</th>
+                <th>New Born Screening (Remarks)</th> <!-- Added column for Remarks -->
+                <th>Action</th>
             </tr>
           </thead>
           <tbody>
             <?php if ($result->num_rows > 0) {
               while ($row = $result->fetch_assoc()) { ?>
                 <tr>
-                  <td><?php echo htmlspecialchars($row['id']); ?></td>
-                  <td><?php echo htmlspecialchars($row['mother_name']); ?></td>
-                  <td><?php echo htmlspecialchars($row['child_last_name']) . ' ' . htmlspecialchars($row['child_first_name']); ?></td>
-                  <td><?php echo htmlspecialchars($row['gender']); ?></td>
-                  <td><?php echo htmlspecialchars(date('d-m-Y', strtotime($row['birth_date']))); ?></td>
-                  <td><?php echo htmlspecialchars($row['weight']); ?></td>
-                  <td><?php echo htmlspecialchars($row['height']); ?></td>
+                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                    <td><?php echo htmlspecialchars($row['mother_name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['child_last_name']) . ' ' . htmlspecialchars($row['child_first_name']); ?></td>
+                    <td><?php echo htmlspecialchars(date('d-m-Y', strtotime($row['birth_date']))); ?></td>
+                    <td><?php echo htmlspecialchars($row['weight']); ?></td>
+                    <td><?php echo htmlspecialchars($row['height']); ?></td>
+                    <td><?php echo htmlspecialchars($row['remarks']); ?></td> <!-- Display Remarks -->
                   <td class="text-right">
                     <!-- Restore button -->
-                    <a class="btn btn-sm btn-success btn-restore" href="#" data-toggle="modal" data-target="#restore" data-id="<?php echo $row['id']; ?>">
+                    <a class="btn btn-sm btn-success btn-restore" href="#" data-toggle="modal" data-target="#restore" data-id="<?php echo $row['id']; ?>"  data-toggle='tooltip' title='Restore'>
                       <i class="fa fa-undo"></i> Restore
                     </a>
                     <!-- Delete button -->
-                    <a class="btn btn-sm btn-danger btn-delete" href="#" data-toggle="modal" data-target="#delete" data-id="<?php echo $row['id']; ?>">
+                    <a class="btn btn-sm btn-danger btn-delete" href="#" data-toggle="modal" data-target="#delete" data-id="<?php echo $row['id']; ?>"  data-toggle='tooltip' title='Delete Permanently'>
                       <i class="fa fa-trash"></i> Delete
                     </a>
                   </td>

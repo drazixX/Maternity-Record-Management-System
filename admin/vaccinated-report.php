@@ -1,4 +1,14 @@
+<?php
+// Assuming you have started the session and have user information in session variables
+session_start();
 
+// Fetch the user_type from the session
+$user_type = $_SESSION['user_type'] ?? '';
+
+
+// You can also fetch it directly from the database if needed
+// Example: $user_type = fetchUserTypeFromDatabase($user_id);
+?>
 <!DOCTYPE html>
 <html lang="en">
    <head>
@@ -23,6 +33,44 @@
             </ul>
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
+
+            <!-- For notif -->
+<?php
+// Include the notifications fetching script
+include 'fetch_notifications.php';
+?>
+<!-- For notif icon -->
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+        <i class="fas fa-bell"></i>
+        <span class="badge badge-warning navbar-badge"><?php echo count($notifications); ?></span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+        <?php if (count($notifications) > 0): ?>
+            <?php foreach ($notifications as $notification): ?>
+                <a href="prenatal.php?patient_id=<?php echo htmlspecialchars($notification['patient_id']); ?>" class="dropdown-item">
+                    <div class="media">
+                        <!-- <img src="path/to/avatar.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle"> -->
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title">
+                                Appointment for <?php echo htmlspecialchars($notification['patient_name']); ?>
+                                <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                            </h3>
+                            <p class="text-sm">Scheduled for: <?php echo date('d-m-Y', strtotime($notification['prenatal_schedule'])); ?></p>
+                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 1 week from now</p>
+                        </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            <div class="dropdown-divider"></div>
+        <?php else: ?>
+            <a href="#" class="dropdown-item">No upcoming appointments</a>
+        <?php endif; ?>
+        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+    </div>
+</li>
+
+
                <li class="nav-item">
                   <a class="nav-link" data-widget="fullscreen" href="#" role="button">
                   <img src="../asset/img/avatar.png" class="img-circle elevation-2" alt="User Image" width="30">
@@ -33,47 +81,17 @@
                   <i class="fas fa-expand-arrows-alt"></i>
                   </a>
                </li>
-         <!-- Logout Button -->
-         <li class="nav-item">
-            <button class="nav-link btn btn-link" data-toggle="modal" data-target="#logoutConfirmModal" type="button">
-              <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-          </li>
+<!-- Logout Button -->
+<li class="nav-item">
+  <a class="nav-link" data-toggle="modal" data-target="#logoutConfirmModal">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </a>
+</li>
             </ul>
          </nav>
-         <!-- Logout Confirmation Modal -->
-<div id="logoutConfirmModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="logoutConfirmLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="logoutConfirmLabel">Confirm Logout</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to log out?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Go Back</button>
-        <a href="../index.php" class="btn btn-danger">Logout</a>
-      </div>
-    </div>
-  </div>
-</div>
-
          <!-- /.navbar -->
          <!-- Main Sidebar Container -->
-         <?php
-// Assuming you have started the session and have user information in session variables
-session_start();
 
-// Fetch the user_type from the session
-$user_type = $_SESSION['user_type'] ?? '';
-
-// You can also fetch it directly from the database if needed
-// Example: $user_type = fetchUserTypeFromDatabase($user_id);
-?>
 <aside
   class="main-sidebar sidebar-light-primary elevation-2"
   style="background-color: rgba(62, 88, 113)"
@@ -153,6 +171,12 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Vaccinated Children</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="children-report.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Children per month</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -168,20 +192,26 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Prenatal Patients</p>
               </a>
             </li>
-
+            <?php if ($user_type !== 'staff'): ?>
             <li class="nav-item">
               <a href="archive_midwives.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Midwives</p>
               </a>
             </li>
-
+            <?php endif; ?>
             <li class="nav-item">
               <a href="archive_child.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Child</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="archive_immunization.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Immunization</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -238,6 +268,7 @@ $user_type = $_SESSION['user_type'] ?? '';
                      </div>
                      <!-- /.col -->
                   </div>
+                  
                   <!-- /.row -->
                </div>
                <!-- /.container-fluid -->
@@ -251,9 +282,20 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <div class="card">
                     <div class="card-body">
                         <div class="chart-title">
-                            <h4>Vaccinated Children</h4><br>
+                            <h4>Vaccinated Children Per Month</h4><br>
+                            <label for="year-select">Select Year:</label>
+                            <select id="year-select" class="form-control" style="width: auto; display: inline-block;">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <br>
                         </div>
                         <table class="table table-bordered mytable">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Number of Vaccinations</th>
+                                </tr>
+                            </thead>
                             <tbody id="immunization-table-body">
                                 <!-- Data will be inserted here -->
                             </tbody>
@@ -265,7 +307,7 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <div class="card">
                     <div class="card-body">
                         <div class="chart-title">
-                            <h4>Graphical Representation Vaccinated Children</h4><br>
+                            <h4>Graphical Representation of Vaccinated Children</h4><br>
                         </div>
                         <canvas id="bargraph"></canvas>
                     </div>
@@ -275,6 +317,7 @@ $user_type = $_SESSION['user_type'] ?? '';
     </div>
     <!-- /.container-fluid -->
 </section>
+
 <!-- /.content -->
 <!-- jQuery -->
 <script src="../asset/jquery/jquery.min.js"></script>
@@ -282,25 +325,61 @@ $user_type = $_SESSION['user_type'] ?? '';
 <script src="../asset/js/chart.js"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Fetch data from PHP
+document.addEventListener("DOMContentLoaded", function () {
+    // Fetch available years
+    fetchAvailableYears();
+
+    // Fetch data initially for the default year
+    $('#year-select').change(function () {
+        fetchImmunizationData($(this).val());
+    });
+
+    function fetchAvailableYears() {
+        $.ajax({
+            url: 'fetch_available_years.php',
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                var yearSelect = $('#year-select');
+                yearSelect.empty();
+                data.years.forEach(function (year) {
+                    yearSelect.append('<option value="' + year + '">' + year + '</option>');
+                });
+
+                // Fetch data for the first available year by default
+                if (data.years.length > 0) {
+                    fetchImmunizationData(data.years[0]);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+            }
+        });
+    }
+
+    function fetchImmunizationData(year) {
         $.ajax({
             url: 'fetch_immunization_data.php',
             method: 'GET',
+            data: { year: year },
             dataType: 'json',
             success: function (data) {
                 // Populate the table
                 var tableBody = $('#immunization-table-body');
                 tableBody.empty();
-                data.types.forEach(function (type, index) {
-                    tableBody.append('<tr><td>' + type + '</td><td>' + data.counts[index] + '</td></tr>');
+                data.months.forEach(function (month, index) {
+                    var row = $('<tr>').append(
+                        '<td><button class="btn btn-link" style="padding: 0; border: none; background: none;" title="Click to show full details" onclick="redirectToMonth(\'' + encodeURIComponent(month) + '\')">' + month + '</button></td>' +
+                        '<td>' + data.counts[index] + '</td>'
+                    );
+                    tableBody.append(row);
                 });
 
                 // Create bar chart
                 var barChartData = {
-                    labels: data.types,
+                    labels: data.months,
                     datasets: [{
-                        label: 'Immunization Types',
+                        label: 'Number of Vaccinations',
                         backgroundColor: 'rgb(79,129,189)',
                         borderColor: 'rgba(0, 158, 251, 1)',
                         borderWidth: 1,
@@ -309,6 +388,9 @@ $user_type = $_SESSION['user_type'] ?? '';
                 };
 
                 var ctx = document.getElementById('bargraph').getContext('2d');
+                if (window.myBar) {
+                    window.myBar.destroy();
+                }
                 window.myBar = new Chart(ctx, {
                     type: 'bar',
                     data: barChartData,
@@ -321,23 +403,36 @@ $user_type = $_SESSION['user_type'] ?? '';
                             x: {
                                 title: {
                                     display: true,
-                                    text: 'Immunization Type'
+                                    text: 'Month'
                                 }
                             },
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Number of Records'
+                                    text: 'Number of Vaccinations'
                                 },
                                 beginAtZero: true
                             }
                         }
                     }
                 });
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
             }
         });
-    });
+    }
+});
+
+function redirectToMonth(month) {
+    var year = $('#year-select').val();
+    window.location.href = 'immunization.php?month=' + month + '&year=' + year;
+}
+
 </script>
+
+
+
 
 
    </body>

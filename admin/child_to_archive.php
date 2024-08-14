@@ -27,7 +27,7 @@ while ($attempt < $maxRetries) {
         $conn->begin_transaction();
 
         // Move the record to the archive table
-        $stmt = $conn->prepare("INSERT INTO archive_child (mother_name, child_last_name, child_first_name, child_middle_name, gender, birth_date, weight, height) SELECT mother_name, child_last_name, child_first_name, child_middle_name, gender, birth_date, weight, height FROM child WHERE id = ?");
+        $stmt = $conn->prepare("INSERT INTO archive_child (mother_name, child_last_name, child_first_name, child_middle_name, remarks, birth_date, weight, height) SELECT mother_name, child_last_name, child_first_name, child_middle_name, remarks, birth_date, weight, height FROM child WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
 

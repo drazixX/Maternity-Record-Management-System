@@ -6,6 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Maternity-Record-Management-System</title>
+    <link rel="shortcut icon" type="image/png" sizes="16x16" href="/MRM/asset/img/baby1.png">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="../asset/fontawesome/css/all.min.css" />
     <link rel="stylesheet" href="../asset/css/adminlte.min.css" />
@@ -30,6 +31,44 @@
           </li>
         </ul>
         <ul class="navbar-nav ml-auto">
+
+        <!-- For notif -->
+<?php
+// Include the notifications fetching script
+include 'fetch_notifications.php';
+?>
+<!-- For notif icon -->
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+        <i class="fas fa-bell"></i>
+        <span class="badge badge-warning navbar-badge"><?php echo count($notifications); ?></span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+        <?php if (count($notifications) > 0): ?>
+            <?php foreach ($notifications as $notification): ?>
+                <a href="prenatal.php?patient_id=<?php echo htmlspecialchars($notification['patient_id']); ?>" class="dropdown-item">
+                    <div class="media">
+                        <!-- <img src="path/to/avatar.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle"> -->
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title">
+                                Appointment for <?php echo htmlspecialchars($notification['patient_name']); ?>
+                                <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                            </h3>
+                            <p class="text-sm">Scheduled for: <?php echo date('d-m-Y', strtotime($notification['prenatal_schedule'])); ?></p>
+                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 1 week from now</p>
+                        </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            <div class="dropdown-divider"></div>
+        <?php else: ?>
+            <a href="#" class="dropdown-item">No upcoming appointments</a>
+        <?php endif; ?>
+        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+    </div>
+</li>
+
+
           <li class="nav-item">
             <a class="nav-link" href="#" role="button">
               <img
@@ -40,11 +79,11 @@
               />
             </a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
               <i class="fas fa-expand-arrows-alt"></i>
             </a>
-          </li>
+          </li> -->
          <!-- Logout Button -->
           <li class="nav-item">
             <button class="nav-link btn btn-link" data-toggle="modal" data-target="#logoutConfirmModal" type="button">
@@ -155,6 +194,12 @@
                       <p>Vaccinated Children</p>
                     </a>
                   </li>
+                  <li class="nav-item">
+      <a href="children-report.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Children per month</p>
+      </a>
+    </li>
                 </ul>
               </li>
               <li class="nav-item">
@@ -182,6 +227,12 @@
                       <p>Child</p>
                     </a>
                   </li>
+                  <li class="nav-item">
+      <a href="archive_immunization.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Immunization</p>
+      </a>
+    </li>
                 </ul>
               </li>
               <li class="nav-item">
@@ -261,7 +312,7 @@
         <div class="card card-info elevation-2">
             <br />
             <div class="col-md-12">
-                <table id="example1" class="table table-bordered table-striped">
+                <table id="example1" class="table table-bordered table">
                     <thead>
                         <tr>
                             <th>User ID</th>

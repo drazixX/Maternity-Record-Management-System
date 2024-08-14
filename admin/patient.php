@@ -1,4 +1,15 @@
 <?php
+// Assuming you have started the session and have user information in session variables
+session_start();
+
+// Fetch the user_type from the session
+$user_type = $_SESSION['user_type'] ?? '';
+
+// You can also fetch it directly from the database if needed
+// Example: $user_type = fetchUserTypeFromDatabase($user_id);
+?>
+
+<?php
 // Assuming you have a database connection file included
 include 'functions/db_connection.php';
 
@@ -22,6 +33,7 @@ if ($result->num_rows > 0) {
     <title>Maternity-Record-Management-System</title>
     <link rel="shortcut icon" type="image/png" sizes="16x16" href="/MRM/asset/img/baby1.png">
 
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="../asset/fontawesome/css/all.min.css" />
     <link rel="stylesheet" href="../asset/css/adminlte.min.css" />
@@ -39,13 +51,39 @@ if ($result->num_rows > 0) {
       rel="stylesheet"
       href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css"
     />
-    
+
+
     <style>
       .custom-width {
-        width: 100%; /* Adjust if needed */
+        width: 10%; /* Adjust if needed */
         margin-bottom: 10px; /* Space between inputs */
       }
     </style>
+        <style>
+  .fas.fa-bell {
+    font-size: 1.1em; /* Adjust the size of the icon */
+    color: #727c7d; /* Change this color if needed */
+    position: relative;
+  }
+
+  .navbar-badge {
+    font-size: 0.6em; /* Adjust the size of the badge */
+    position: absolute;
+    top: 5px; /* Positioning the badge relative to the icon */
+    right: -3px;
+    background-color: #ffc107; /* Badge color */
+    color: #090a0a; /* Badge text color */
+    border-radius: 2%;
+    padding: 2px 5px;
+  }
+
+  .nav-link[data-toggle="dropdown"]:hover {
+    color: #000; /* Ensure the icon is visible on hover */
+  }
+</style>
+
+
+
   </head>
   <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
@@ -54,6 +92,7 @@ if ($result->num_rows > 0) {
         style="background-color: rgba(131, 219, 214)"
       >
         <!-- Left navbar links -->
+         
         <ul class="navbar-nav">
           <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button"
@@ -62,6 +101,45 @@ if ($result->num_rows > 0) {
           </li>
         </ul>
         <ul class="navbar-nav ml-auto">
+
+
+
+<!-- For notif -->
+<?php
+// Include the notifications fetching script
+include 'fetch_notifications.php';
+?>
+<!-- For notif icon -->
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+        <i class="fas fa-bell"></i>
+        <span class="badge badge-warning navbar-badge"><?php echo count($notifications); ?></span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+        <?php if (count($notifications) > 0): ?>
+            <?php foreach ($notifications as $notification): ?>
+                <a href="prenatal.php?patient_id=<?php echo htmlspecialchars($notification['patient_id']); ?>" class="dropdown-item">
+                    <div class="media">
+                        <!-- <img src="path/to/avatar.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle"> -->
+                        <div class="media-body">
+                            <h3 class="dropdown-item-title">
+                                Appointment for <?php echo htmlspecialchars($notification['patient_name']); ?>
+                                <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                            </h3>
+                            <p class="text-sm">Scheduled for: <?php echo date('d-m-Y', strtotime($notification['prenatal_schedule'])); ?></p>
+                            <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 1 week from now</p>
+                        </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+            <div class="dropdown-divider"></div>
+        <?php else: ?>
+            <a href="#" class="dropdown-item">No upcoming appointments</a>
+        <?php endif; ?>
+        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+    </div>
+</li>
+
           <li class="nav-item">
             <a class="nav-link" href="#" role="button">
               <img
@@ -72,11 +150,11 @@ if ($result->num_rows > 0) {
               />
             </a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
               <i class="fas fa-expand-arrows-alt"></i>
             </a>
-          </li>
+          </li> -->
          <!-- Logout Button -->
          <li class="nav-item">
             <button class="nav-link btn btn-link" data-toggle="modal" data-target="#logoutConfirmModal" type="button">
@@ -99,22 +177,13 @@ if ($result->num_rows > 0) {
         <p>Are you sure you want to log out?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Go Back</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
         <a href="../index.php" class="btn btn-danger">Logout</a>
       </div>
     </div>
   </div>
 </div>
-      <?php
-// Assuming you have started the session and have user information in session variables
-session_start();
 
-// Fetch the user_type from the session
-$user_type = $_SESSION['user_type'] ?? '';
-
-// You can also fetch it directly from the database if needed
-// Example: $user_type = fetchUserTypeFromDatabase($user_id);
-?>
 <aside
   class="main-sidebar sidebar-light-primary elevation-2"
   style="background-color: rgba(62, 88, 113)"
@@ -194,6 +263,12 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Vaccinated Children</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="children-report.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Children per month</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -209,20 +284,26 @@ $user_type = $_SESSION['user_type'] ?? '';
                 <p>Prenatal Patients</p>
               </a>
             </li>
-
+            <?php if ($user_type !== 'staff'): ?>
             <li class="nav-item">
               <a href="archive_midwives.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Midwives</p>
               </a>
             </li>
-
+            <?php endif; ?>
             <li class="nav-item">
               <a href="archive_child.php" class="nav-link">
                 <i class="nav-icon far fa-circle"></i>
                 <p>Child</p>
               </a>
             </li>
+            <li class="nav-item">
+      <a href="archive_immunization.php" class="nav-link">
+        <i class="nav-icon far fa-circle"></i>
+        <p>Immunization</p>
+      </a>
+    </li>
           </ul>
         </li>
         <li class="nav-item">
@@ -292,6 +373,10 @@ $user_type = $_SESSION['user_type'] ?? '';
                 "
                 ><i class="fa fa-plus"></i> Add New</a
               >
+              <!-- <a class="btn btn-sm elevation-2" href="javascript:history.back()" style="float: left; margin-top: 20px; margin-left: 10px; background-color: rgba(131, 219, 214);">
+    <i class="fa fa-arrow-left"></i> Go Back
+</a> -->
+
               <!-- <a
     class="btn btn-sm elevation-2"
     href="prenatal.php"
@@ -361,53 +446,89 @@ $stmt->close();
 $countStmt->close();
 $mysqli->close();
 ?>
-
 <!-- Display table -->
 <section class="content">
     <div class="container-fluid">
         <div class="card card-info elevation-2">
             <div class="col-md-12">
                 <!-- Search Form -->
-                <form method="GET" class="form-inline mb-3">
-                    <input type="text" name="search" class="form-control mr-2" placeholder="Search..." value="<?php echo htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES); ?>">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </form>
+                <div class="row mb-3">
+                    <div class="col-md-2 ml-auto">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+                    </div>
+                </div>
 
-                <table id="example1" class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Patient ID</th>
-                            <th>Full Name</th>
-                            <th>Address</th>
-                            <th>Age</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        // Display rows
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                $statusBadge = $row['status'] == 'Active' ? 'bg-success' : 'bg-danger';
-                                echo "<tr>";
-                                echo "<td><a href='prenatal.php?patient_id=" . urlencode($row['patient_id']) . "'>" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "</a></td>";
-                                echo "<td>" . htmlspecialchars($row['full_name'], ENT_QUOTES) . "</td>";
-                                echo "<td>" . htmlspecialchars($row['address'], ENT_QUOTES) . "</td>";
-                                echo "<td>" . htmlspecialchars($row['age'], ENT_QUOTES) . "</td>";
-                                echo "<td><span class='badge " . $statusBadge . "'>" . htmlspecialchars($row['status'], ENT_QUOTES) . "</span></td>";
-                                echo "<td class='text-right'>";
-                                echo "<a class='btn btn-sm btn-success' href='#' data-toggle='modal' data-target='#edit' data-id='" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "'><i class='fa fa-pen'></i></a>";
-                                echo "<a class='btn btn-sm btn-danger' href='#' data-toggle='modal' data-target='#delete' data-id='" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "'><i class='fa fa-trash'></i></a>";
-                                echo "</td>";
-                                echo "</tr>";
+                <!-- Responsive Table -->
+                <div class="table-responsive">
+                    <table id="example1" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th title="Click to show full details">Patient ID</th>
+                                <th>Full Name</th>
+                                <th>Address</th>
+                                <th>Age</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Display rows
+                            if ($result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                                    $statusBadge = $row['status'] == 'Active' ? 'bg-success' : 'bg-danger';
+                                    echo "<tr>";
+                                    echo "<td><a href='prenatal.php?patient_id=" . urlencode($row['patient_id']) . "' title='Click to show full details'>" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "</a></td>";
+                                    echo "<td>" . htmlspecialchars($row['full_name'], ENT_QUOTES) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['address'], ENT_QUOTES) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['age'], ENT_QUOTES) . "</td>";
+                                    echo "<td><span class='badge " . $statusBadge . "'>" . htmlspecialchars($row['status'], ENT_QUOTES) . "</span></td>";
+                                    echo "<td class='text-right'>";
+                                    echo "<a class='btn btn-sm btn-success' href='#' data-toggle='modal' data-target='#edit' data-id='" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "' data-toggle='tooltip' title='Edit'><i class='fa fa-pen'></i></a>";
+                                    echo "<a class='btn btn-sm btn-info' href='#' data-toggle='modal' data-target='#uploadFiles' data-id='" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "' data-toggle='tooltip' title='Upload Files'><i class='fa fa-upload'></i></a>";
+                                    echo "<a class='btn btn-sm btn-danger' href='#' data-toggle='modal' data-target='#delete' data-id='" . htmlspecialchars($row['patient_id'], ENT_QUOTES) . "' data-toggle='tooltip' title='Delete'><i class='fa fa-trash'></i></a>";                                                               
+                                    echo "</td>";
+                                    echo "</tr>";
+                                }
+                            } else {
+                                echo "<tr><td colspan='6'>No records found</td></tr>";
                             }
-                        } else {
-                            echo "<tr><td colspan='6'>No records found</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
+                            ?>
+                        </tbody>
+                    </table>
+                </div> <!-- End of table-responsive -->
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Upload Files Modal -->
+<div class="modal fade" id="uploadFiles" tabindex="-1" role="dialog" aria-labelledby="uploadFilesLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadFilesLabel">Upload Files</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            <form id="fileUploadForm" method="POST" enctype="multipart/form-data" action="upload_files.php">
+    <input type="hidden" name="patient_id" id="uploadPatientId" value="">
+    <div class="form-group">
+        <label for="file">Choose file</label>
+        <input type="file" class="form-control" id="file" name="file">
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
                 <!-- Pagination -->
                 <nav>
@@ -431,6 +552,7 @@ $mysqli->close();
 </section>
 
 
+<!-- Delete modal -->
 <div id="delete" class="modal animated rubberBand delete-modal" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -450,7 +572,279 @@ $mysqli->close();
 </div>
 
 
-<!-- Edit Modal -->
+<!-- SEPARATE MODAL for adding -->
+<div id="add" class="modal animated rubberBand delete-modal" role="dialog">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span class="fa fa-hospital-user"></span> Patient Information
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="./functions/save_patient.php" method="POST">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>First Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="first_name"
+                  placeholder="First Name"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Middle Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="middle_name"
+                  placeholder="Middle Name"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Last Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="last_name"
+                  placeholder="Last Name"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Contact</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="contact"
+                  placeholder="Contact"
+                  required 
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Birthdate</label>
+                <input type="date" class="form-control" name="birthdate" required />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status" required>
+                  <option value="">Select Status</option>
+                  <option value="Pregnant">Pregnant</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Delivered_other">Delivered(Not in Clinic)</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Address</label>
+                <textarea
+                  class="form-control"
+                  name="address"
+                  placeholder="Address"
+                  required
+                ></textarea>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Height</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="height"
+                  placeholder="Height"
+                  required
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Age</label>
+                <input type="number" class="form-control" name="age" required />
+              </div>
+            </div>
+            <div class="col-md-6">
+  <div class="form-group">
+    <label>Midwife/Nurse/Doctor</label>
+    <select
+      class="form-control"
+      name="midwife_nurse_doctor"
+      id="midwife_nurse_doctor"
+      required
+    >
+      <option value="">Select Midwife/Nurse/Doctor</option>
+      <?php foreach ($midwives as $midwife): ?>
+        <option value="<?php echo htmlspecialchars($midwife['full_name']); ?>">
+          <?php echo htmlspecialchars($midwife['full_name']); ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
+  </div>
+</div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Weight</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" name="weight" required />
+                  <div class="input-group-append">
+                    <span class="input-group-text">kg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Newly Added Fields -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Name of Husband</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="husband_name"
+                  placeholder="Name of Husband"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Plan to Deliver At</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="plan_to_deliver_at"
+                  placeholder="Plan to Deliver At"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>LMP</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  name="lmp"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Civil Status</label>
+                <select class="form-control" name="civil_status" placeholder="Civil Status" required>
+                  <option >Single</option>
+                  <option >Married</option>
+                  <option >Divorced</option>
+                  <option >Widowed</option>
+                  <option >Cohabitation</option>
+                </select>
+              </div>
+
+
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Religion</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="religion"
+                  placeholder="Religion"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Educational Level</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="educ_level"
+                  placeholder="Educational Level"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Occupation</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="occupation"
+                  placeholder="Occupation"
+                />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Monthly Income</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  name="monthly_income"
+                  placeholder="Monthly Income"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Expected Delivery</label>
+                <input type="date" class="form-control" name="expected_delivery" required/>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Blood Type</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="blood_type"
+                  placeholder="Blood Type"
+                />
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEPARATE MODAL for editing -->
 <div id="edit" class="modal animated rubberBand delete-modal" role="dialog">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -468,30 +862,29 @@ $mysqli->close();
         </button>
       </div>
       <div class="modal-body">
-        <form id="editModalForm" action="functions/update_patient.php" method="POST">
+        <form action="./functions/update_patient.php" method="POST">
+          <input type="hidden" name="patient_id" id="edit_patient_id" />
+
+           <!--  -->
+           <label>  ----------------------- Fill remarks if the patient does delivered but not in the clinic -----------------------</label>
+          <div class="col-md-12">
+    <div class="form-group text-center">
+        <label for="remarks">Remarks</label>
+        <input type="text" class="form-control" id="edit_remarks" name="remarks" placeholder="Input the reason" />
+    </div>
+</div>
+
+                                    <label>  ----------------------- Fill remarks if the patient does delivered but not in the clinic -----------------------</label>
+
           <div class="row">
             <div class="col-md-4">
               <div class="form-group">
-                <label for="patient_id">Patient ID</label>
+                <label>First Name</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="patient_id"
-                  name="patient_id"
-                  placeholder="PNT-123"
-                  required
-                  readonly
-                />
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="form-group">
-                <label for="first_name">First Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="first_name"
                   name="first_name"
+                  id="edit_first_name"
                   placeholder="First Name"
                   required
                 />
@@ -499,24 +892,24 @@ $mysqli->close();
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="middle_name">Middle Name</label>
+                <label>Middle Name</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="middle_name"
                   name="middle_name"
+                  id="edit_middle_name"
                   placeholder="Middle Name"
                 />
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="last_name">Last Name</label>
+                <label>Last Name</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="last_name"
                   name="last_name"
+                  id="edit_last_name"
                   placeholder="Last Name"
                   required
                 />
@@ -524,12 +917,12 @@ $mysqli->close();
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="contact">Contact</label>
+                <label>Contact</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="contact"
                   name="contact"
+                  id="edit_contact"
                   placeholder="Contact"
                   required
                 />
@@ -537,23 +930,34 @@ $mysqli->close();
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="birthdate">Birthdate</label>
+                <label>Birthdate</label>
                 <input
                   type="date"
                   class="form-control"
-                  id="birthdate"
                   name="birthdate"
+                  id="edit_birthdate"
                   required
                 />
               </div>
             </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" name="status" id="edit_status" required>
+                  <option value="">Select Status</option>
+                  <option value="Pregnant">Pregnant</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Delivered_other">Delivered(Not in Clinic)</option>
+                </select>
+              </div>
+            </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="address">Address</label>
+                <label>Address</label>
                 <textarea
                   class="form-control"
-                  id="address"
                   name="address"
+                  id="edit_address"
                   placeholder="Address"
                   required
                 ></textarea>
@@ -561,12 +965,12 @@ $mysqli->close();
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="height">Height</label>
+                <label>Height</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="height"
                   name="height"
+                  id="edit_height"
                   placeholder="Height"
                   required
                 />
@@ -574,43 +978,44 @@ $mysqli->close();
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="age">Age</label>
+                <label>Age</label>
                 <input
                   type="number"
                   class="form-control"
-                  id="age"
                   name="age"
+                  id="edit_age"
                   required
                 />
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
-                <label for="midwife_nurse_doctor">Midwife/Nurse/Doctor</label>
+                <label>Midwife/Nurse/Doctor</label>
                 <select
                   class="form-control"
-                  id="midwife_nurse_doctor"
                   name="midwife_nurse_doctor"
+                  id="edit_midwife_nurse_doctor"
                   required
                 >
                   <option value="">Select Midwife/Nurse/Doctor</option>
                   <?php foreach ($midwives as $midwife): ?>
-                    <option value="<?php echo $midwife['midwife_id']; ?>">
+                    <option value="<?php echo htmlspecialchars($midwife['full_name']); ?>">
                       <?php echo htmlspecialchars($midwife['full_name']); ?>
                     </option>
                   <?php endforeach; ?>
                 </select>
               </div>
             </div>
+
             <div class="col-md-6">
               <div class="form-group">
-                <label for="weight">Weight</label>
+                <label>Weight</label>
                 <div class="input-group">
                   <input
                     type="text"
                     class="form-control"
-                    id="weight"
                     name="weight"
+                    id="edit_weight"
                     required
                   />
                   <div class="input-group-append">
@@ -619,141 +1024,140 @@ $mysqli->close();
                 </div>
               </div>
             </div>
+
+            <!-- Newly Added Fields -->
             <div class="col-md-6">
               <div class="form-group">
-                <label for="size_of_tummy">Size of Tummy</label>
+                <label>Name of Husband</label>
                 <input
-                  type="number"
+                  type="text"
                   class="form-control"
-                  id="size_of_tummy"
-                  name="size_of_tummy"
-                  placeholder="Size of Tummy"
-                  required
+                  name="husband_name"
+                  id="edit_husband_name"
+                  placeholder="Name of Husband"
                 />
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <div class="form-group">
-                <label for="expected_delivery">Expected Delivery</label>
+                <label>Plan to Deliver At</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="plan_to_deliver_at"
+                  id="edit_plan_to_deliver_at"
+                  placeholder="Plan to Deliver At"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>LMP</label>
                 <input
                   type="date"
                   class="form-control"
-                  id="expected_delivery"
-                  name="expected_delivery"
-                  required
+                  name="lmp"
+                  id="edit_lmp"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Civil Status</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="civil_status"
+                  id="edit_civil_status"
+                  placeholder="Civil Status"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Religion</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="religion"
+                  id="edit_religion"
+                  placeholder="Religion"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Educational Level</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="educ_level"
+                  id="edit_educ_level"
+                  placeholder="Educational Level"
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Occupation</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="occupation"
+                  id="edit_occupation"
+                  placeholder="Occupation"
                 />
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
-                <label for="status">Status</label>
-                <select
+                <label>Monthly Income</label>
+                <input
+                  type="number"
                   class="form-control"
-                  id="status"
-                  name="status"
+                  name="monthly_income"
+                  id="edit_monthly_income"
+                  placeholder="Monthly Income"
+                />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Expected Delivery</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  name="expected_delivery"
+                  id="edit_expected_delivery"
                   required
-                >
-                  <option value="">Select Status</option>
-                  <option value="Pregnant">Pregnant</option>
-                  <option value="Delivered">Delivered</option>
-                </select>
+                />
               </div>
             </div>
-            <div class="col-md-12">
-              <div class="form-group text-center">
-                <label>Vitals</label>
-                <div class="row">
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="bp">BP</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="bp"
-                        name="bp"
-                        placeholder="BP"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="pr">PR</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="pr"
-                        name="pr"
-                        placeholder="PR"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="rr">RR</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="rr"
-                        name="rr"
-                        placeholder="RR"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="fh">FH</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="fh"
-                        name="fh"
-                        placeholder="FH"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="fht">FHT</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="fht"
-                        name="fht"
-                        placeholder="FHT"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div class="col-md-2">
-                    <div class="form-group">
-                      <label for="aog">AOG</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="aog"
-                        name="aog"
-                        placeholder="AOG"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Blood Type</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="blood_type"
+                  id="edit_blood_type"
+                  placeholder="Blood Type"
+                />
               </div>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              Close
-            </button>
-            <button type="submit" class="btn btn-primary">Save</button>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
           </div>
         </form>
       </div>
@@ -763,269 +1167,8 @@ $mysqli->close();
 
 
 
-    <!-- SEPARATE MODAL for adding -->
-    <div id="add" class="modal animated rubberBand delete-modal" role="dialog">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">
-              <span class="fa fa-hospital-user"></span> Patient Information
-            </h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <form action="./functions/save_patient.php" method="POST">
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label>First Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="first_name"
-                      placeholder="First Name"
-                      required
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label>Middle Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="middle_name"
-                      placeholder="Middle Name"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label>Last Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="last_name"
-                      placeholder="Last Name"
-                      required
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Contact</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="contact"
-                      placeholder="Contact"
-                      required 
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Birthdate</label>
-                    <input type="date" class="form-control" name="birthdate"   required/>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Address</label>
-                    <textarea
-                      class="form-control"
-                      name="address"
-                      placeholder="Address"
-                      required
-                    ></textarea>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Height</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      name="height"
-                      placeholder="Height"
-                      required
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Age</label>
-                    <input type="number" class="form-control" name="age" required />
-                  </div>
-                </div>
-                <div class="col-md-6">
-    <div class="form-group">
-        <label>Midwife/Nurse/Doctor</label>
-        <select
-            class="form-control"
-            name="midwife_nurse_doctor"
-            required
-        >
-            <option value="">Select Midwife/Nurse/Doctor</option>
-            <?php foreach ($midwives as $midwife): ?>
-                <option value="<?php echo $midwife['midwife_id']; ?>">
-                    <?php echo htmlspecialchars($midwife['full_name']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-</div>
 
 
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Weight</label>
-                    <div class="input-group">
-                      <input type="text" class="form-control" name="weight"  required/>
-                      <div class="input-group-append">
-                        <span class="input-group-text">kg</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label>Size of Tummy</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      name="size_of_tummy"
-                      placeholder="Size of Tummy"
-                      required
-                    />
-                  </div>
-                </div>    
-                      <div class="col-md-4">
-                          <div class="form-group">
-                              <label>Expected Delivery</label>
-                              <input type="date" class="form-control" name="expected_delivery" required/>
-                          </div>
-                      </div>
-                  
-                      <div class="col-md-3">
-                      <div class="form-group">
-  <label>Status</label>
-  <select class="form-control" name="status" >
-    <option value="">Select Status</option>
-    <option value="Pregnant">Pregnant</option>
-    <option value="Delivered">Delivered</option>
-  </select>
-</div>
-
-                </div>
-                <div class="col-md-12">
-                  <div class="form-group text-center">
-                    <label>Vitals</label>
-                    <div class="row">
-                      <div class="col-md-2">
-                        <div class="form-group">
-                          <label for="bp">BP</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="bp"
-                            name="bp"
-                            placeholder="BP"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-2">
-                        <div class="form-group">
-                          <label for="pr">PR</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="pr"
-                            name="pr"
-                            placeholder="PR"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-2">
-                        <div class="form-group">
-                          <label for="rr">RR</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="rr"
-                            name="rr"
-                            placeholder="RR"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-2">
-                        <div class="form-group">
-                          <label for="fh">FH</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="fh"
-                            name="fh"
-                            placeholder="FH"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-2">
-                        <div class="form-group">
-                          <label for="fht">FHT</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="fht"
-                            name="fht"
-                            placeholder="FHT"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <div class="col-md-2">
-                        <div class="form-group">
-                          <label for="aog">AOG</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="aog"
-                            name="aog"
-                            placeholder="AOG"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-dismiss="modal"
-                  >
-                    Close
-                  </button>
-                  <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <!-- DataTables JS -->
@@ -1039,8 +1182,30 @@ $mysqli->close();
     <script src="../asset/tables/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="../asset/tables/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
     <script src="../asset/tables/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<!-- For search bar functionality -->
+     <!-- JavaScript for Search Functionality -->
+     <script>
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        var searchTerm = this.value.toLowerCase();
+        var tableRows = document.querySelectorAll('#example1 tbody tr');
 
+        tableRows.forEach(function(row) {
+            var rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+        });
+    });
+</script>
+
+    
     <script>
+    $('#uploadFiles').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var patientId = button.data('id'); // Extract info from data-* attributes
+        var modal = $(this);
+        modal.find('.modal-body #uploadPatientId').val(patientId);
+    });
+</script>
+<script>
 $(document).ready(function() {
     $('#edit').on('show.bs.modal', function(event) {
         var button = $(event.relatedTarget); // Button that triggered the modal
@@ -1061,28 +1226,30 @@ $(document).ready(function() {
                 if (response.status === 'success') {
                     var data = response.data;
                     // Populate the modal form fields with the data
-                    $('#editModalForm #patient_id').val(data.patient_id);
-                    $('#editModalForm #first_name').val(data.first_name);
-                    $('#editModalForm #middle_name').val(data.middle_name);
-                    $('#editModalForm #last_name').val(data.last_name);
-                    $('#editModalForm #contact').val(data.contact);
-                    $('#editModalForm #birthdate').val(data.birthdate);
-                    $('#editModalForm #address').val(data.address);
-                    $('#editModalForm #age').val(data.age);
-                    $('#editModalForm #height').val(data.height);
-                    $('#editModalForm #midwife_nurse_doctor').val(data.midwife_nurse_doctor);
-                    $('#editModalForm #weight').val(data.weight);
-                    $('#editModalForm #size_of_tummy').val(data.size_of_tummy);
-                    $('#editModalForm #expected_delivery').val(data.expected_delivery);
-                    $('#editModalForm #status').val(data.status);
-                    $('#editModalForm #bp').val(data.bp);
-                    $('#editModalForm #pr').val(data.pr);
-                    $('#editModalForm #rr').val(data.rr);
-                    $('#editModalForm #fh').val(data.fh);
-                    $('#editModalForm #fht').val(data.fht);
-                    $('#editModalForm #aog').val(data.aog);
-                    $('#editModalForm #prenatal_schedule').val(data.prenatal_schedule);
-                    $('#editModalForm #remarks').val(data.remarks);
+                    $('#edit_patient_id').val(data.patient_id);
+                    $('#edit_first_name').val(data.first_name);
+                    $('#edit_middle_name').val(data.middle_name);
+                    $('#edit_last_name').val(data.last_name);
+                    $('#edit_contact').val(data.contact);
+                    $('#edit_birthdate').val(data.birthdate);
+                    $('#edit_address').val(data.address);
+                    $('#edit_age').val(data.age);
+                    $('#edit_height').val(data.height);
+                    $('#edit_midwife_nurse_doctor').val(data.midwife_nurse_doctor);
+                    $('#edit_weight').val(data.weight);
+                    $('#edit_prenatal_schedule').val(data.prenatal_schedule);
+                    $('#edit_expected_delivery').val(data.expected_delivery);
+                    $('#edit_status').val(data.status);
+                    $('#edit_remarks').val(data.remarks);
+                    $('#edit_husband_name').val(data.husband_name);
+                    $('#edit_plan_to_deliver_at').val(data.plan_to_deliver_at);
+                    $('#edit_lmp').val(data.lmp);
+                    $('#edit_civil_status').val(data.civil_status);
+                    $('#edit_religion').val(data.religion);
+                    $('#edit_educ_level').val(data.educ_level);
+                    $('#edit_occupation').val(data.occupation);
+                    $('#edit_monthly_income').val(data.monthly_income);
+                    $('#edit_blood_type').val(data.blood_type);
                 } else {
                     alert(response.message); // Handle errors
                 }
@@ -1093,9 +1260,8 @@ $(document).ready(function() {
         });
     });
 });
-
-
 </script>
+
 
 
 
@@ -1169,6 +1335,14 @@ $(document).ready(function() {
             }
         });
     </script>
-    
+
+
+<!-- TOOLTIP -->
+<script>
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+
   </body>
 </html>

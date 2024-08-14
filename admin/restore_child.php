@@ -19,8 +19,8 @@ $conn->begin_transaction();
 
 try {
     // Move data from archive_child back to child
-    $sql = "INSERT INTO child (mother_name, child_last_name, child_first_name, child_middle_name, gender, birth_date, weight, height)
-            SELECT mother_name, child_last_name, child_first_name, child_middle_name, gender, birth_date, weight, height
+    $sql = "INSERT INTO child (mother_name, child_last_name, child_first_name, child_middle_name, remarks, birth_date, weight, height)
+            SELECT mother_name, child_last_name, child_first_name, child_middle_name, remarks, birth_date, weight, height
             FROM archive_child
             WHERE id = ?";
     $stmt = $conn->prepare($sql);

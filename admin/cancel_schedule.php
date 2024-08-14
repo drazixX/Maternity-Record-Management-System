@@ -1,35 +1,60 @@
 <?php
-// Database connection
-$servername = "localhost";
-$username = "root";
-$password = ""; // Your password if applicable
-$database = "mrm";
+include 'functions/db_connection.php'; // Ensure this path is correct
 
-$conn = new mysqli($servername, $username, $password, $database);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['schedule_id'])) {
+    $schedule_id = intval($_POST['schedule_id']);
+    
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
-// Get the patient ID from the form
-$patient_id = $_POST['patient_id'];
+    // Start transaction
+    $conn->begin_transaction();
 
-// Update query to set prenatal_schedule to NULL
-$sql = "UPDATE patient SET prenatal_schedule = NULL WHERE patient_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $patient_id);
+    try {
+        // Update the prenatal_schedule to NULL
+        $cancel_query = "UPDATE patient SET prenatal_schedule = NULL WHERE patient_id = ?";
+        $stmt_cancel = $conn->prepare($cancel_query);
+        if (!$stmt_cancel) {
+            throw new Exception("Prepare statement failed for update: " . $conn->error);
+        }
+        $stmt_cancel->bind_param("i", $schedule_id);
+        if (!$stmt_cancel->execute()) {
+            throw new Exception("Execute statement failed for update: " . $stmt_cancel->error);
+        }
 
-if ($stmt->execute()) {
-    echo "Schedule cancelled successfully.";
+        // Commit transaction
+        $conn->commit();
+
+        // Close statements and connection
+        $stmt_cancel->close();
+        $conn->close();
+
+        // Redirect with success message
+        echo "<script>
+                alert('Schedule successfully canceled!');
+                window.location.href = 'appointment.php';
+              </script>";
+        exit();
+    } catch (Exception $e) {
+        // Rollback transaction if something goes wrong
+        $conn->rollback();
+        $conn->close();
+        echo "<script>
+                alert('Error: " . $e->getMessage() . "');
+                window.location.href = 'appointment.php';
+              </script>";
+        exit();
+    }
 } else {
-    echo "Error cancelling schedule: " . $conn->error;
+    echo "<script>
+            alert('Invalid request.');
+            window.location.href = 'appointment.php';
+          </script>";
+    exit();
 }
-
-$stmt->close();
-$conn->close();
-
-// Redirect or provide a message to the user
-header("Location: appointment.php"); // Replace with your page
-exit;
 ?>

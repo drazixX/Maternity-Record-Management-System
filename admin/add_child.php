@@ -18,14 +18,14 @@ $mother_name = $_POST['mother_name'];
 $child_last_name = $_POST['child_last_name'];
 $child_first_name = $_POST['child_first_name'];
 $child_middle_name = $_POST['child_middle_name'];
-$gender = $_POST['gender'];
 $birth_date = $_POST['birth_date'];
 $weight = $_POST['weight'];
 $height = $_POST['height'];
+$remarks = $_POST['remarks']; // Added remarks
 
 // Prepare SQL statement
-$sql = "INSERT INTO child (mother_name, child_last_name, child_first_name, child_middle_name, gender, birth_date, weight, height)
-        VALUES ('$mother_name', '$child_last_name', '$child_first_name', '$child_middle_name', '$gender', '$birth_date', '$weight', '$height')";
+$sql = "INSERT INTO child (mother_name, child_last_name, child_first_name, child_middle_name, birth_date, weight, height, remarks)
+        VALUES ('$mother_name', '$child_last_name', '$child_first_name', '$child_middle_name', '$birth_date', '$weight', '$height', '$remarks')";
 
 // Execute query
 if ($conn->query($sql) === TRUE) {

@@ -2,29 +2,35 @@
 // fetch_immunization_data.php
 include 'functions/db_connection.php'; // Ensure this path is correct
 
-// SQL query to count immunization_type
+$year = isset($_GET['year']) ? $_GET['year'] : date('Y');
+
+// SQL query to count immunizations per month for the selected year
 $query = "
     SELECT 
-        immunization_type,
+        DATE_FORMAT(date_of_immunization, '%M') AS month,
         COUNT(*) AS count
     FROM immunizations
-    GROUP BY immunization_type
-    ORDER BY immunization_type
+    WHERE YEAR(date_of_immunization) = ?
+    GROUP BY month
+    ORDER BY MONTH(date_of_immunization)
 ";
 
-$result = mysqli_query($conn, $query);
+$stmt = $conn->prepare($query);
+$stmt->bind_param('i', $year);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $data = [];
-$types = [];
+$months = [];
 $counts = [];
 
-while ($row = mysqli_fetch_assoc($result)) {
-    $types[] = $row['immunization_type'];
+while ($row = $result->fetch_assoc()) {
+    $months[] = $row['month'];
     $counts[] = (int)$row['count'];
 }
 
 $response = [
-    'types' => $types,
+    'months' => $months,
     'counts' => $counts
 ];
 

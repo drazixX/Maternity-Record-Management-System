@@ -1,32 +1,29 @@
 <?php
-include 'functions/db_connection.php'; // Ensure this path is correct
+include 'functions/db_connection.php';
 
-// SQL query to count prenatal_schedule per month
-$query = "
-    SELECT 
-        MONTHNAME(prenatal_schedule) AS month,
-        COUNT(*) AS count
-    FROM patient
-    WHERE prenatal_schedule IS NOT NULL
-    GROUP BY MONTH(prenatal_schedule)
-    ORDER BY MONTH(prenatal_schedule)
-";
+$year = isset($_GET['year']) ? $_GET['year'] : '';
 
-$result = mysqli_query($conn, $query);
+$sql = "SELECT DATE_FORMAT(prenatal_schedule, '%M') AS month, COUNT(*) AS count
+        FROM patient
+        WHERE YEAR(prenatal_schedule) = ?
+        GROUP BY month
+        ORDER BY MONTH(STR_TO_DATE(month, '%M'))";
 
-$data = [];
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('s', $year);
+$stmt->execute();
+$result = $stmt->get_result();
+
 $months = [];
 $counts = [];
 
-while ($row = mysqli_fetch_assoc($result)) {
+while ($row = $result->fetch_assoc()) {
     $months[] = $row['month'];
-    $counts[] = (int)$row['count'];
+    $counts[] = $row['count'];
 }
 
-$response = [
-    'months' => $months,
-    'counts' => $counts
-];
+echo json_encode(['months' => $months, 'counts' => $counts]);
 
-echo json_encode($response);
+$stmt->close();
+$conn->close();
 ?>
